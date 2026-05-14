@@ -13,12 +13,13 @@ function ShellChrome() {
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 py-8">
         <div>
           <p className="text-xs uppercase tracking-[0.35em] text-cc-moss/80">
-            Phase 1 · Foundation
+            Phase 2 · Grid and input
           </p>
           <h1 className="mt-2 text-3xl font-semibold text-cc-beige sm:text-4xl">{env.appName}</h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-cc-beige/70">
-            Canvas-first architecture for a cozy, moss-lit puzzle experience. Rendering loop is
-            imperative and decoupled from React reconciliation.
+            Responsive 8×8 board, pointer-driven interaction, and a layered canvas pipeline. Hot
+            pointer data stays out of React; the RAF pass reads Zustand via{' '}
+            <code className="text-cc-moss/90">getState</code>.
           </p>
         </div>
         <div className="hidden text-right text-xs text-cc-beige/60 sm:block">
@@ -33,11 +34,11 @@ function ShellChrome() {
 
           <aside className="flex flex-col gap-4 rounded-[var(--radius-panel)] border border-white/5 bg-surface-1/70 p-6 shadow-soft backdrop-blur">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-cc-moss/80">Rendering</p>
-              <h2 className="mt-2 text-xl font-semibold text-cc-beige">Canvas host</h2>
+              <p className="text-xs uppercase tracking-[0.3em] text-cc-moss/80">Interaction</p>
+              <h2 className="mt-2 text-xl font-semibold text-cc-beige">Pointer engine</h2>
               <p className="mt-2 text-sm leading-relaxed text-cc-beige/70">
-                RAF-driven loop, DPR-aware sizing, ResizeObserver sync, and strict cleanup. Gameplay
-                systems will plug into the same surface without touching the React tree each frame.
+                Pointer capture, drag promotion, CSS→grid mapping, and dev diagnostics (` key). Next
+                phases add path validation, win logic, and persistence.
               </p>
             </div>
 
@@ -49,8 +50,8 @@ function ShellChrome() {
             >
               <p className="font-medium text-cc-rose">Upcoming</p>
               <p className="mt-2 leading-relaxed">
-                Interaction input layer, graph logic, procedural levels, and persistence will layer
-                on this foundation.
+                Path rendering, collision rules, procedural levels, and cloud saves stack on this
+                interactive core.
               </p>
             </motion.div>
           </aside>

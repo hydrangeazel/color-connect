@@ -18,8 +18,10 @@ Hosts providers, routing (future), and layout chrome. `AppProviders` wires Frame
 
 Low-level, framework-agnostic building blocks:
 
-- `renderer` — RAF loop, sizing, and draw passes that must never depend on React render frequency.
-- `input`, `animation`, and `audio` are scaffolded for pointer routing, tweening timelines, and Web Audio graphs.
+- `renderer` — RAF loop, sizing, layered draw passes (`backgroundRenderer`, `boardRenderer`, `nodeRenderer`, optional `debugRenderer`) composed by `createBoardFrameRenderer`.
+- `grid` — responsive 8×8 layout math plus pixel↔cell mapping shared by input and renderers.
+- `input` — pointer sessions (`mountPointerSession`), coordinate conversion, and `mountInteractionController` bridging DOM events to stores without React subscriptions.
+- `animation` and `audio` remain reserved for tween timelines and Web Audio graphs.
 
 ### Game domain (`src/game`)
 
@@ -40,7 +42,15 @@ React only mounts/unmounts the loop and forwards the latest draw closure through
 
 ## State management
 
-Zustand slices are intentionally granular (`game`, `settings`, `audio`, `ui`) so future persistence, telemetry, and multiplayer can subscribe to narrow surfaces without prop drilling.
+Zustand slices are intentionally granular (`game`, `settings`, `audio`, `ui`, `board`, `interaction`, `renderer`) so future persistence, telemetry, and multiplayer can subscribe to narrow surfaces without prop drilling.
+
+**Phase 2 hot path:** pointer move / frame paint reads interaction + renderer snapshots through `getState()` inside the RAF callback and pointer session handlers. React components avoid selectors on high-churn fields (hover cell, pointer phase) so reconciliation stays cold while the canvas stays hot.
+
+## Phase 2 interactive surface
+
+- **Grid** — `computeBoardLayout` fits an 8×8 board inside the canvas with equal padding, preserving a square aspect ratio at any viewport size (DPR still handled in `Canvas`).
+- **Render pipeline** — `createBoardFrameRenderer` sequences background → board chrome → nodes → optional dev overlay. Each pass receives explicit options objects to keep functions pure and testable.
+- **Input** — `mountInteractionController` listens on the board surface, converts client coordinates through `clientToCanvasLocal`, maps to cells via `canvasPointToCell`, promotes drags after a small pixel threshold, and records clicks for endpoint selection (no path rules yet).
 
 ## Styling system
 
@@ -48,4 +58,4 @@ Tailwind CSS v4 reads tokens from `src/styles/theme.css` (`@theme`). Semantic al
 
 ## Deployment
 
-Vercel runs `npm run build` with the default Vite output (`dist`). No backend is provisioned in Phase 1.
+Vercel runs `npm run build` with the default Vite output (`dist`). No backend is provisioned yet.

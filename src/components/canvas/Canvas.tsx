@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react'
+import { forwardRef, useEffect, useLayoutEffect, useRef, type CSSProperties, type Ref } from 'react'
 import { resizeCanvasToDisplaySize } from '@/engine/renderer/canvasSizing'
 import { createRenderLoop } from '@/engine/renderer/renderLoop'
 import { cn } from '@/lib/utils/cn'
@@ -13,17 +13,25 @@ export type CanvasProps = {
   onFrame: FrameRenderFn
 }
 
-export function Canvas({
-  className,
-  style,
-  tabIndex = 0,
-  'aria-label': ariaLabel = 'Game canvas',
-  onFrame,
-}: CanvasProps) {
+function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
+  if (!ref) return
+  if (typeof ref === 'function') ref(value)
+  else ref.current = value
+}
+
+export const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(function Canvas(
+  { className, style, tabIndex = 0, 'aria-label': ariaLabel = 'Game canvas', onFrame },
+  forwardedRef,
+) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const onFrameRef = useRef(onFrame)
   const physicalRef = useRef<CanvasPhysicalSize | null>(null)
+
+  const setCanvasNode = (node: HTMLCanvasElement | null) => {
+    canvasRef.current = node
+    assignRef(forwardedRef, node)
+  }
 
   useLayoutEffect(() => {
     onFrameRef.current = onFrame
@@ -87,7 +95,7 @@ export function Canvas({
   return (
     <div ref={containerRef} className={cn('relative h-full w-full', className)} style={style}>
       <canvas
-        ref={canvasRef}
+        ref={setCanvasNode}
         className="block h-full w-full touch-none outline-none focus-visible:ring-2 focus-visible:ring-cc-moss/60"
         tabIndex={tabIndex}
         role="img"
@@ -95,4 +103,4 @@ export function Canvas({
       />
     </div>
   )
-}
+})

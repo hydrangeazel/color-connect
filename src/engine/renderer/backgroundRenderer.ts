@@ -1,23 +1,15 @@
 import type { FrameRenderContext } from '@/types/canvas'
-
-const palette = {
-  forest: '#0a3323',
-  midnight: '#105666',
-  moss: '#839958',
-  beige: '#f7f4d5',
-  rose: '#d3968c',
-} as const
+import { CC_PALETTE } from '@/lib/palette'
 
 /**
- * Non-interactive visual baseline for the canvas stack.
- * Intentionally avoids gameplay constructs (pairs, paths, collisions).
+ * Atmospheric stage backdrop. Intentionally gameplay-agnostic.
  */
-export function paintStageFoundation(context: FrameRenderContext): void {
+export function renderBackground(context: FrameRenderContext): void {
   const { ctx, cssWidth, cssHeight, now } = context
 
   const gradient = ctx.createLinearGradient(0, 0, cssWidth, cssHeight)
-  gradient.addColorStop(0, palette.forest)
-  gradient.addColorStop(0.55, palette.midnight)
+  gradient.addColorStop(0, CC_PALETTE.forest)
+  gradient.addColorStop(0.55, CC_PALETTE.midnight)
   gradient.addColorStop(1, '#071f16')
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, cssWidth, cssHeight)
@@ -38,22 +30,28 @@ export function paintStageFoundation(context: FrameRenderContext): void {
 
   ctx.save()
   ctx.globalCompositeOperation = 'screen'
-  ctx.fillStyle = 'rgba(247, 244, 213, 0.04)'
+  ctx.fillStyle = 'rgba(247, 244, 213, 0.035)'
   const step = 48
   for (let x = 0; x < cssWidth; x += step) {
     for (let y = 0; y < cssHeight; y += step) {
-      const ox = (x + y * 0.12 + now * 0.01) % step
+      const ox = (x + y * 0.12 + now * 0.012) % step
       ctx.beginPath()
-      ctx.arc(x + ox, y, 1.1, 0, Math.PI * 2)
+      ctx.arc(x + ox, y, 1.05, 0, Math.PI * 2)
       ctx.fill()
     }
   }
   ctx.restore()
 
-  ctx.save()
-  ctx.strokeStyle = 'rgba(247, 244, 213, 0.08)'
-  ctx.lineWidth = 1
-  ctx.setLineDash([6, 10])
-  ctx.strokeRect(18, 18, cssWidth - 36, cssHeight - 36)
-  ctx.restore()
+  const boardGlow = ctx.createRadialGradient(
+    cssWidth * 0.5,
+    cssHeight * 0.5,
+    Math.min(cssWidth, cssHeight) * 0.15,
+    cssWidth * 0.5,
+    cssHeight * 0.5,
+    Math.max(cssWidth, cssHeight) * 0.55,
+  )
+  boardGlow.addColorStop(0, 'rgba(16, 86, 102, 0.18)')
+  boardGlow.addColorStop(1, 'rgba(10, 51, 35, 0)')
+  ctx.fillStyle = boardGlow
+  ctx.fillRect(0, 0, cssWidth, cssHeight)
 }
