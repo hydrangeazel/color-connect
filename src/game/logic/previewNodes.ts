@@ -2,7 +2,7 @@ import type { BoardNode } from '@/types/grid'
 
 /**
  * Hand-authored preview pairs for Phase 2 rendering + hit testing.
- * Path drawing / validation arrives in later phases.
+ * Phase 3: pairs are connected by orthogonal paths; rules live in `game/logic`.
  */
 export const PHASE2_PREVIEW_NODES: BoardNode[] = [
   { id: 'pair-a-a', col: 1, row: 1, colorKey: 'moss' },

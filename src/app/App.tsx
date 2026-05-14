@@ -13,13 +13,13 @@ function ShellChrome() {
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 py-8">
         <div>
           <p className="text-xs uppercase tracking-[0.35em] text-cc-moss/80">
-            Phase 2 · Grid and input
+            Phase 3 · Gameplay core
           </p>
           <h1 className="mt-2 text-3xl font-semibold text-cc-beige sm:text-4xl">{env.appName}</h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-cc-beige/70">
-            Responsive 8×8 board, pointer-driven interaction, and a layered canvas pipeline. Hot
-            pointer data stays out of React; the RAF pass reads Zustand via{' '}
-            <code className="text-cc-moss/90">getState</code>.
+            Drag from any colored dot to paint orthogonal paths, rewind by doubling back, and
+            complete every pair to solve. Logic runs in Zustand + pure pathing helpers; React never
+            tracks pointer deltas.
           </p>
         </div>
         <div className="hidden text-right text-xs text-cc-beige/60 sm:block">
@@ -34,11 +34,11 @@ function ShellChrome() {
 
           <aside className="flex flex-col gap-4 rounded-[var(--radius-panel)] border border-white/5 bg-surface-1/70 p-6 shadow-soft backdrop-blur">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-cc-moss/80">Interaction</p>
-              <h2 className="mt-2 text-xl font-semibold text-cc-beige">Pointer engine</h2>
+              <p className="text-xs uppercase tracking-[0.3em] text-cc-moss/80">Gameplay</p>
+              <h2 className="mt-2 text-xl font-semibold text-cc-beige">Path intelligence</h2>
               <p className="mt-2 text-sm leading-relaxed text-cc-beige/70">
-                Pointer capture, drag promotion, CSS→grid mapping, and dev diagnostics (` key). Next
-                phases add path validation, win logic, and persistence.
+                Occupancy-aware extensions, truncation, cross-color blocking, and win detection. Dev
+                overlay shows lint + occupancy; press R to reset paths.
               </p>
             </div>
 

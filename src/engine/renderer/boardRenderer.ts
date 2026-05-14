@@ -7,11 +7,13 @@ export type BoardRenderOptions = {
   layout: BoardLayout
   hoverCell: GridCell | null
   now: number
+  solved?: boolean
+  solvedAtMs?: number | null
 }
 
 export function renderBoard(
   context: FrameRenderContext,
-  { layout, hoverCell, now }: BoardRenderOptions,
+  { layout, hoverCell, now, solved, solvedAtMs }: BoardRenderOptions,
 ): void {
   const { ctx } = context
 
@@ -54,6 +56,14 @@ export function renderBoard(
     ctx.lineTo(layout.boardSizePx, p)
   }
   ctx.stroke()
+
+  if (solved) {
+    const pulse = solvedAtMs != null ? 0.45 + Math.sin((now - solvedAtMs) * 0.003) * 0.2 : 0.55
+    ctx.strokeStyle = `rgba(211, 150, 140, ${0.35 + pulse * 0.2})`
+    ctx.lineWidth = 2.2
+    roundRect(ctx, -2, -2, layout.boardSizePx + 4, layout.boardSizePx + 4, r + 2)
+    ctx.stroke()
+  }
 
   ctx.restore()
 }

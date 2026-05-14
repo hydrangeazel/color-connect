@@ -1,6 +1,7 @@
 import { canvasPointToCell, computeBoardLayout } from '@/engine/grid'
 import { clientToCanvasLocal } from '@/engine/input/coordinateSystem'
 import { mountPointerSession, PRIMARY_DRAG_THRESHOLD_PX } from '@/engine/input/pointerManager'
+import { useGameplayStore } from '@/game/stores/gameplayStore'
 import { useInteractionStore } from '@/game/stores/interactionStore'
 import type { BoardNode } from '@/types/grid'
 
@@ -11,8 +12,7 @@ export type InteractionMountOptions = {
 }
 
 /**
- * Bridges DOM pointer events to the interaction store without involving React render work.
- * Drag detection uses a small Euclidean threshold in canvas CSS space.
+ * Bridges DOM pointer events to interaction + gameplay stores without React render work.
  */
 export function mountInteractionController(options: InteractionMountOptions): () => void {
   const { target, canvas, getNodes } = options
@@ -28,6 +28,7 @@ export function mountInteractionController(options: InteractionMountOptions): ()
       const layout = layoutFromCanvas()
       const cell = canvasPointToCell(layout, local.x, local.y)
       useInteractionStore.getState().pointerDown({ pos: local, cell })
+      useGameplayStore.getState().beginPointer(cell, getNodes())
     },
 
     onPointerMove: (event) => {
@@ -39,16 +40,19 @@ export function mountInteractionController(options: InteractionMountOptions): ()
       useInteractionStore.getState().setHoverCell(cell)
       useInteractionStore.getState().pointerMove({ pos: local })
 
-      const state = useInteractionStore.getState()
-      if (state.pointerPhase !== 'pressed') return
+      const afterMove = useInteractionStore.getState()
+      const origin = afterMove.pressStartPx
+      if (afterMove.pointerPhase === 'pressed' && origin) {
+        const dx = local.x - origin.x
+        const dy = local.y - origin.y
+        if (dx * dx + dy * dy > PRIMARY_DRAG_THRESHOLD_PX * PRIMARY_DRAG_THRESHOLD_PX) {
+          useInteractionStore.getState().promoteToDrag()
+        }
+      }
 
-      const origin = state.pressStartPx
-      if (!origin) return
-
-      const dx = local.x - origin.x
-      const dy = local.y - origin.y
-      if (dx * dx + dy * dy > PRIMARY_DRAG_THRESHOLD_PX * PRIMARY_DRAG_THRESHOLD_PX) {
-        useInteractionStore.getState().promoteToDrag()
+      const phase = useInteractionStore.getState().pointerPhase
+      if (phase === 'pressed' || phase === 'dragging') {
+        useGameplayStore.getState().applyHoverDuringSession(cell)
       }
     },
 
@@ -66,9 +70,11 @@ export function mountInteractionController(options: InteractionMountOptions): ()
         endCell,
         nodes: getNodes(),
       })
+      useGameplayStore.getState().endPointerSession()
     },
 
     onPointerCancel: () => {
+      useGameplayStore.getState().endPointerSession()
       useInteractionStore.getState().pointerCancel()
     },
   })

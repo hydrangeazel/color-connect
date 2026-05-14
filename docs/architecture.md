@@ -18,7 +18,7 @@ Hosts providers, routing (future), and layout chrome. `AppProviders` wires Frame
 
 Low-level, framework-agnostic building blocks:
 
-- `renderer` — RAF loop, sizing, layered draw passes (`backgroundRenderer`, `boardRenderer`, `nodeRenderer`, optional `debugRenderer`) composed by `createBoardFrameRenderer`.
+- `renderer` — RAF loop, sizing, layered draw passes (`backgroundRenderer`, `boardRenderer`, `pathRenderer`, `nodeRenderer`, optional `debugRenderer`) composed by `createBoardFrameRenderer`.
 - `grid` — responsive 8×8 layout math plus pixel↔cell mapping shared by input and renderers.
 - `input` — pointer sessions (`mountPointerSession`), coordinate conversion, and `mountInteractionController` bridging DOM events to stores without React subscriptions.
 - `animation` and `audio` remain reserved for tween timelines and Web Audio graphs.
@@ -42,15 +42,22 @@ React only mounts/unmounts the loop and forwards the latest draw closure through
 
 ## State management
 
-Zustand slices are intentionally granular (`game`, `settings`, `audio`, `ui`, `board`, `interaction`, `renderer`) so future persistence, telemetry, and multiplayer can subscribe to narrow surfaces without prop drilling.
+Zustand slices are intentionally granular (`game`, `settings`, `audio`, `ui`, `board`, `interaction`, `renderer`, `gameplay`) so future persistence, telemetry, and multiplayer can subscribe to narrow surfaces without prop drilling.
 
-**Phase 2 hot path:** pointer move / frame paint reads interaction + renderer snapshots through `getState()` inside the RAF callback and pointer session handlers. React components avoid selectors on high-churn fields (hover cell, pointer phase) so reconciliation stays cold while the canvas stays hot.
+**Phase 2–3 hot path:** pointer move / frame paint reads interaction, renderer, and gameplay snapshots through `getState()` inside the RAF callback and pointer session handlers. React components avoid selectors on high-churn fields so reconciliation stays cold while the canvas stays hot.
+
+## Phase 3 gameplay core
+
+- **Pathing** — `applyHoverPathStep` is a pure state machine for Flow-style moves: orthogonal extension, backstep, interior truncation, and cross-color blocking via a reusable `Uint8Array` occupancy scratch (no per-frame heap churn beyond small path copies capped by board size).
+- **Completion** — `isPairPathComplete` enforces orthogonal simplicity plus endpoints at both polyline ends; `computePuzzleSolved` aggregates across pairs from `types/puzzle`.
+- **Stores** — `useGameplayStore` owns `paths`, `sessionColor`, `solved`, and `scratchOcc`. `interactionManager` calls into gameplay on down/move/up without React.
+- **Rendering** — `renderPaths` draws rounded, glowing polylines with a subtle solve pulse; board chrome adds a soft victory rim driven by `solvedAtMs`.
 
 ## Phase 2 interactive surface
 
 - **Grid** — `computeBoardLayout` fits an 8×8 board inside the canvas with equal padding, preserving a square aspect ratio at any viewport size (DPR still handled in `Canvas`).
-- **Render pipeline** — `createBoardFrameRenderer` sequences background → board chrome → nodes → optional dev overlay. Each pass receives explicit options objects to keep functions pure and testable.
-- **Input** — `mountInteractionController` listens on the board surface, converts client coordinates through `clientToCanvasLocal`, maps to cells via `canvasPointToCell`, promotes drags after a small pixel threshold, and records clicks for endpoint selection (no path rules yet).
+- **Render pipeline** — `createBoardFrameRenderer` sequences background → board chrome → paths → nodes → optional dev overlay. Each pass receives explicit options objects to keep functions pure and testable.
+- **Input** — `mountInteractionController` listens on the board surface, converts client coordinates through `clientToCanvasLocal`, maps to cells via `canvasPointToCell`, promotes drags after a small pixel threshold, and forwards hover cells into gameplay while a session is active.
 
 ## Styling system
 

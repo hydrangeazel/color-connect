@@ -10,18 +10,26 @@ export type NodeRenderOptions = {
   hoverCell: GridCell | null
   selectedNodeId: string | null
   now: number
+  solved?: boolean
+  solvedAtMs?: number | null
 }
 
 export function renderNodes(context: FrameRenderContext, options: NodeRenderOptions): void {
   const { ctx } = context
-  const { layout, nodes, hoverCell, selectedNodeId, now } = options
+  const { layout, nodes, hoverCell, selectedNodeId, now, solved, solvedAtMs } = options
 
   for (const node of nodes) {
     const { x, y } = cellToCanvasCenter(layout, node)
     const isHovered = hoverCell?.col === node.col && hoverCell?.row === node.row
     const isSelected = node.id === selectedNodeId
+    const winPulse =
+      solved && solvedAtMs != null
+        ? 1 + Math.sin((now - solvedAtMs) * 0.0045) * 0.05
+        : solved
+          ? 1.03
+          : 1
     const hoverPulse = isHovered ? 1 + Math.sin(now * 0.01) * 0.06 : 1
-    const radius = layout.cellSize * 0.28 * hoverPulse
+    const radius = layout.cellSize * 0.28 * hoverPulse * winPulse
     const color = CC_PALETTE[node.colorKey]
 
     ctx.save()

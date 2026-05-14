@@ -64,6 +64,8 @@ npm run dev
 | `npm run format`       | Prettier write               |
 | `npm run format:check` | Prettier check               |
 | `npm run typecheck`    | Project references build     |
+| `npm run test`         | Vitest unit tests            |
+| `npm run test:watch`   | Vitest watch mode            |
 
 ### Environment
 

@@ -1,6 +1,7 @@
 export { useAudioStore } from './audioStore'
 export { useBoardStore } from './boardStore'
 export { useGameStore } from './gameStore'
+export { useGameplayStore } from './gameplayStore'
 export { useInteractionStore } from './interactionStore'
 export { useRendererStore } from './rendererStore'
 export { useSettingsStore } from './settingsStore'

@@ -4,6 +4,7 @@ import { Canvas } from '@/components/canvas/Canvas'
 import { mountInteractionController } from '@/engine/input'
 import { createBoardFrameRenderer } from '@/engine/renderer/boardFramePipeline'
 import { PHASE2_PREVIEW_NODES } from '@/game/logic/previewNodes'
+import { useGameplayStore } from '@/game/stores/gameplayStore'
 import { useRendererStore } from '@/game/stores/rendererStore'
 import { cn } from '@/lib/utils/cn'
 
@@ -16,6 +17,10 @@ export function GameCanvas({ className }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const frameRenderer = useMemo(() => createBoardFrameRenderer(PHASE2_PREVIEW_NODES), [])
+
+  useLayoutEffect(() => {
+    useGameplayStore.getState().initFromNodes(PHASE2_PREVIEW_NODES)
+  }, [])
 
   useLayoutEffect(() => {
     const surface = surfaceRef.current
@@ -35,6 +40,9 @@ export function GameCanvas({ className }: GameCanvasProps) {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === '`') {
         useRendererStore.getState().toggleDebugOverlay()
+      }
+      if (event.key === 'r' || event.key === 'R') {
+        useGameplayStore.getState().resetRound()
       }
     }
 
