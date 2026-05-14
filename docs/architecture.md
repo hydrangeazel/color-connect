@@ -53,6 +53,15 @@ Zustand slices are intentionally granular (`game`, `settings`, `audio`, `ui`, `b
 - **Stores** — `useGameplayStore` owns `paths`, `sessionColor`, `solved`, and `scratchOcc`. `interactionManager` calls into gameplay on down/move/up without React.
 - **Rendering** — `renderPaths` draws rounded, glowing polylines with a subtle solve pulse; board chrome adds a soft victory rim driven by `solvedAtMs`.
 
+## Phase 4 content and progression
+
+- **Puzzle schema** — `PuzzleRecordV1` in `game/levels/schemas` is the serialization contract (id, title, size, difficulty, palette, pairs, optional metadata). Built-in JSON lives in `game/levels/puzzles/`; `tsconfig` enables `resolveJsonModule` for typed imports.
+- **Pipeline** — `assertValidPuzzlePayload` / `parseUnknownPuzzlePayload` in `loaders/puzzleLoader.ts` validate then normalize to `LoadedPuzzle` (record + `boardNodes`). `registry/builtinCatalog.ts` is the single bundle-time catalog; duplicate ids fail fast at module init.
+- **Progression** — `useLevelFlowStore` tracks active puzzle, transition phase, unlock/solve sets, and `boardRevision` for canvas re-init. `GameCanvas` calls `useGameplayStore.initFromNodes` when the active puzzle or revision changes; solved edges call `onPuzzleSolved` once.
+- **Persistence** — `SaveFileV1` (`saveSchema.ts`) is written via `localStorageDriver`; `hydrateProgress` merges disk data with the current catalog (drops unknown ids, keeps first level unlocked). Migrations stay explicit by bumping `v` and extending hydrate.
+- **UI** — `LevelHud` surfaces title, difficulty, reset, and next-level affordances without embedding puzzle data in leaf components.
+- **Tests** — Vitest uses `src/test/setupVitest.ts` for a synchronous `requestAnimationFrame` shim so progression code runs in Node; coverage includes validation, hydration, loaders, persistence, and level-flow behavior.
+
 ## Phase 2 interactive surface
 
 - **Grid** — `computeBoardLayout` fits an 8×8 board inside the canvas with equal padding, preserving a square aspect ratio at any viewport size (DPR still handled in `Canvas`).

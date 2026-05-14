@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "advanced-strand",
+  "title": "Strandlines",
+  "size": 8,
+  "difficulty": "advanced",
+  "palette": "cozy-default",
+  "pairs": [
+    { "color": "moss", "a": { "col": 1, "row": 2 }, "b": { "col": 6, "row": 5 } },
+    { "color": "rose", "a": { "col": 5, "row": 1 }, "b": { "col": 2, "row": 6 } },
+    { "color": "beige", "a": { "col": 0, "row": 4 }, "b": { "col": 7, "row": 3 } },
+    { "color": "midnight", "a": { "col": 4, "row": 0 }, "b": { "col": 3, "row": 7 } }
+  ],
+  "metadata": { "campaign": "builtin", "index": 2 }
+}

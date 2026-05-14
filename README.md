@@ -1,12 +1,12 @@
 # Color Connect
 
-Browser-native puzzle experience inspired by Flow Free — calm, moss-lit, and canvas-driven. This repository currently ships **Phase 1: foundation architecture** only. Gameplay systems (grid logic, drag routing, win detection) land in later phases.
+Browser-native puzzle experience inspired by Flow Free — calm, moss-lit, and canvas-driven. The repo ships **through Phase 4**: canvas interaction, Flow-style pathing and win detection, plus a **JSON puzzle catalog**, **progression**, and **versioned localStorage saves** (see `docs/architecture.md`).
 
 ## Highlights
 
 - Vite + React 19 + TypeScript with strict compiler settings
 - Tailwind CSS v4 design tokens for the cozy palette
-- Zustand store slices ready for gameplay, audio, settings, and HUD state
+- Zustand store slices for gameplay, settings, level flow, and HUD-adjacent state
 - Framer Motion wired through `MotionConfig` with OS reduced-motion sync
 - Canvas host with RAF loop, DPR-aware sizing, ResizeObserver sync, and strict cleanup
 - ESLint + Prettier + GitHub Actions CI
@@ -83,27 +83,20 @@ VITE_APP_NAME=Color Connect
 
 ## Roadmap
 
-### Phase 2 — Interaction
+### Shipped (Phases 1–4)
 
-- Pointer/touch input router (`engine/input`)
-- Grid model, pair metadata, and drag-to-connect gestures
-- Line crossing prevention and validation feedback
+- Canvas RAF pipeline, grid layout, pointer routing, path mutation, completion, and dev overlay
+- `PuzzleRecordV1` content format, builtin registry, validation, loaders, `useLevelFlowStore`, and `SaveFileV1` persistence
 
-### Phase 3 — Content
+### Next
 
-- Authoring format for handcrafted levels
-- Procedural generator experiments
-- Replay capture + playback buffer
-
-### Phase 4 — Live services
-
-- Fastify API, Prisma models, PostgreSQL persistence
-- Redis-backed leaderboards and session cache
-- Telemetry + analytics hooks (privacy-preserving)
+- Remote catalogs, daily puzzles, and procedural seeds (same loader boundary)
+- Replay buffer and analytics hooks
+- Optional backend: Fastify, Prisma, PostgreSQL, Redis for accounts and cloud sync
 
 ## Contributing
 
-Issues and PRs welcome. Please run `npm run lint` and `npm run format:check` before submitting. CI mirrors those commands.
+Issues and PRs welcome. Please run `npm run test`, `npm run lint`, and `npm run format:check` before submitting. CI mirrors those commands.
 
 ## License
 

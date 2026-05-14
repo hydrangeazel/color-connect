@@ -2,10 +2,10 @@ import { computeBoardLayout } from '@/engine/grid'
 import { useBoardStore } from '@/game/stores/boardStore'
 import { useGameplayStore } from '@/game/stores/gameplayStore'
 import { useInteractionStore } from '@/game/stores/interactionStore'
+import { useLevelFlowStore } from '@/game/levels/progression/levelFlowStore'
 import { useRendererStore } from '@/game/stores/rendererStore'
 import type { CcColorKey } from '@/lib/palette'
 import type { FrameRenderFn } from '@/types/canvas'
-import type { BoardNode } from '@/types/grid'
 
 import { renderBackground } from './backgroundRenderer'
 import { renderBoard } from './boardRenderer'
@@ -15,9 +15,9 @@ import { renderPaths } from './pathRenderer'
 
 /**
  * Single entry draw pass for the interactive board.
- * Reads interaction/renderer/gameplay snapshots via `getState` to avoid React subscriptions on hot paths.
+ * Reads interaction/renderer/gameplay/level snapshots via `getState` to avoid React subscriptions on hot paths.
  */
-export function createBoardFrameRenderer(nodes: readonly BoardNode[]): FrameRenderFn {
+export function createBoardFrameRenderer(): FrameRenderFn {
   let fpsSmoothed = 0
 
   return (context) => {
@@ -29,6 +29,8 @@ export function createBoardFrameRenderer(nodes: readonly BoardNode[]): FrameRend
     const interaction = useInteractionStore.getState()
     const renderer = useRendererStore.getState()
     const gameplay = useGameplayStore.getState()
+    const level = useLevelFlowStore.getState()
+    const nodes = level.boardNodes
 
     const instFps = deltaMs > 0 ? 1000 / deltaMs : 0
     fpsSmoothed = fpsSmoothed === 0 ? instFps : fpsSmoothed * 0.9 + instFps * 0.1
@@ -64,6 +66,8 @@ export function createBoardFrameRenderer(nodes: readonly BoardNode[]): FrameRend
 
     if (import.meta.env.DEV && renderer.debugOverlay) {
       const g = useGameplayStore.getState()
+      const lv = useLevelFlowStore.getState()
+      const started = lv.levelStartedAt
       renderDebugOverlay(context, {
         layout,
         hoverCell: interaction.hoverCell,
@@ -76,6 +80,18 @@ export function createBoardFrameRenderer(nodes: readonly BoardNode[]): FrameRend
           solved: g.solved,
           lastPathLint: g.lastPathLint,
           pairByColor: g.pairByColor,
+        },
+        level: {
+          puzzleId: lv.activePuzzleId,
+          title: lv.activeRecord?.title ?? '—',
+          difficulty: lv.activeRecord?.difficulty ?? '—',
+          transition: lv.transition,
+          activeIndex: lv.activeIndex,
+          catalogLen: lv.catalog.length,
+          unlocked: lv.unlockedLevelIds.length,
+          solvedProgress: lv.solvedLevelIds.length,
+          levelStartedAt: started,
+          elapsedMs: started ? now - started : null,
         },
       })
     }

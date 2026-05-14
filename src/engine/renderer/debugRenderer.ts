@@ -2,6 +2,7 @@ import type { BoardLayout } from '@/engine/grid/boardLayout'
 import { cellToCanvasCenter } from '@/engine/grid/cellMapping'
 import { writeOccupancyMap, type PathsState } from '@/game/logic/pathing/occupation'
 import type { PathStepLint } from '@/game/logic/pathing/pathMutation'
+import type { LevelTransition } from '@/game/levels/progression/levelFlowStore'
 import type { CcColorKey } from '@/lib/palette'
 import type { FrameRenderContext } from '@/types/canvas'
 import type { GridCell } from '@/types/grid'
@@ -14,6 +15,19 @@ export type GameplayDebugView = {
   pairByColor: Record<CcColorKey, { a: GridCell; b: GridCell }>
 }
 
+export type LevelDebugView = {
+  puzzleId: string | null
+  title: string
+  difficulty: string
+  transition: LevelTransition
+  activeIndex: number
+  catalogLen: number
+  unlocked: number
+  solvedProgress: number
+  levelStartedAt: number | null
+  elapsedMs: number | null
+}
+
 export type DebugRenderOptions = {
   layout: BoardLayout
   hoverCell: GridCell | null
@@ -21,13 +35,14 @@ export type DebugRenderOptions = {
   pointerPhase: string
   dragging: boolean
   gameplay: GameplayDebugView
+  level: LevelDebugView
 }
 
 const occScratch = new Uint8Array(64)
 
 export function renderDebugOverlay(
   context: FrameRenderContext,
-  { layout, hoverCell, fps, pointerPhase, dragging, gameplay }: DebugRenderOptions,
+  { layout, hoverCell, fps, pointerPhase, dragging, gameplay, level }: DebugRenderOptions,
 ): void {
   const { ctx } = context
 
@@ -47,6 +62,11 @@ export function renderDebugOverlay(
     `lint ${gameplay.lastPathLint}`,
     `session ${gameplay.sessionColor ?? '—'} len ${pathCells}`,
     `solved ${gameplay.solved ? 'yes' : 'no'}`,
+    `puzzle ${level.puzzleId ?? '—'}`,
+    `${level.title} · ${level.difficulty}`,
+    `flow ${level.transition} · idx ${level.activeIndex + 1}/${level.catalogLen}`,
+    `prog u${level.unlocked} s${level.solvedProgress}`,
+    level.elapsedMs != null ? `lvTime ${(level.elapsedMs / 1000).toFixed(1)}s` : 'lvTime —',
   ]
 
   let y = 18

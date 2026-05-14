@@ -1,3 +1,4 @@
+export { useLevelFlowStore } from '@/game/levels/progression/levelFlowStore'
 export { useAudioStore } from './audioStore'
 export { useBoardStore } from './boardStore'
 export { useGameStore } from './gameStore'

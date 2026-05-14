@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "intermediate-twist",
+  "title": "Twist & Turn",
+  "size": 8,
+  "difficulty": "intermediate",
+  "palette": "cozy-default",
+  "pairs": [
+    { "color": "moss", "a": { "col": 0, "row": 0 }, "b": { "col": 7, "row": 7 } },
+    { "color": "rose", "a": { "col": 7, "row": 0 }, "b": { "col": 0, "row": 7 } },
+    { "color": "beige", "a": { "col": 2, "row": 2 }, "b": { "col": 5, "row": 5 } },
+    { "color": "midnight", "a": { "col": 3, "row": 6 }, "b": { "col": 4, "row": 1 } }
+  ],
+  "metadata": { "campaign": "builtin", "index": 1 }
+}
