@@ -1,0 +1,24 @@
+@theme {
+  /* Brand palette */
+  --color-cc-forest: #0a3323;
+  --color-cc-moss: #839958;
+  --color-cc-beige: #f7f4d5;
+  --color-cc-rose: #d3968c;
+  --color-cc-midnight: #105666;
+
+  /* Semantic aliases */
+  --color-surface-1: color-mix(in oklab, var(--color-cc-forest) 88%, black 12%);
+  --color-surface-2: color-mix(in oklab, var(--color-cc-midnight) 55%, var(--color-cc-forest) 45%);
+  --color-glow-moss: color-mix(in oklab, var(--color-cc-moss) 35%, transparent);
+  --color-glow-rose: color-mix(in oklab, var(--color-cc-rose) 22%, transparent);
+
+  --shadow-soft: 0 18px 60px rgb(0 0 0 / 0.35);
+  --shadow-inner-glow: inset 0 1px 0 rgb(255 255 255 / 0.06);
+
+  --radius-panel: 1.75rem;
+  --radius-control: 9999px;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans',
+    'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+}

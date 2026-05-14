@@ -1,0 +1,28 @@
+@import 'tailwindcss';
+@import './theme.css';
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-cc-forest text-cc-beige font-sans antialiased;
+    background-image: radial-gradient(
+      120% 80% at 50% 0%,
+      color-mix(in oklab, var(--color-cc-midnight) 55%, transparent) 0%,
+      var(--color-cc-forest) 55%,
+      #061a12 100%
+    );
+  }
+
+  * {
+    border-color: color-mix(in oklab, var(--color-cc-moss) 35%, transparent);
+  }
+}
