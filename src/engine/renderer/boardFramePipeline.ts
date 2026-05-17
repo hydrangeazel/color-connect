@@ -1,6 +1,7 @@
 import { computeBoardLayout } from '@/engine/grid'
 import { useBoardStore } from '@/game/stores/boardStore'
 import { useGameplayStore } from '@/game/stores/gameplayStore'
+import { useGenerationDevStore } from '@/game/generation/debug/generationDevStore'
 import { useInteractionStore } from '@/game/stores/interactionStore'
 import { useLevelFlowStore } from '@/game/levels/progression/levelFlowStore'
 import { useRendererStore } from '@/game/stores/rendererStore'
@@ -50,6 +51,7 @@ export function createBoardFrameRenderer(): FrameRenderFn {
       paths: gameplay.paths,
       sessionColor: gameplay.sessionColor,
       colorOrder,
+      hoverCell: interaction.hoverCell,
       now,
       solved: gameplay.solved,
       solvedAtMs: gameplay.solvedAtMs,
@@ -59,6 +61,8 @@ export function createBoardFrameRenderer(): FrameRenderFn {
       nodes,
       hoverCell: interaction.hoverCell,
       selectedNodeId: interaction.selectedNodeId,
+      sessionColor: gameplay.sessionColor,
+      dragging: interaction.pointerPhase === 'dragging',
       now,
       solved: gameplay.solved,
       solvedAtMs: gameplay.solvedAtMs,
@@ -68,6 +72,7 @@ export function createBoardFrameRenderer(): FrameRenderFn {
       const g = useGameplayStore.getState()
       const lv = useLevelFlowStore.getState()
       const started = lv.levelStartedAt
+      const gen = useGenerationDevStore.getState()
       renderDebugOverlay(context, {
         layout,
         hoverCell: interaction.hoverCell,
@@ -93,6 +98,21 @@ export function createBoardFrameRenderer(): FrameRenderFn {
           levelStartedAt: started,
           elapsedMs: started ? now - started : null,
         },
+        generation: {
+          seed: gen.lastSeed,
+          target: gen.lastTarget,
+          isGenerating: gen.isGenerating,
+          genMs: gen.lastGenMs,
+          score: gen.lastScore,
+          classified: gen.lastClassified,
+          occupancy: gen.lastOccupancy,
+          meanTurns: gen.lastMeanTurns,
+          junction: gen.lastJunctionPressure,
+          error: gen.lastError,
+        },
+        verbose: renderer.debugVerbose,
+        nodes,
+        pointerCss: interaction.pointerCanvasPos,
       })
     }
   }

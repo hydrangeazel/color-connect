@@ -62,6 +62,16 @@ Zustand slices are intentionally granular (`game`, `settings`, `audio`, `ui`, `b
 - **UI** — `LevelHud` surfaces title, difficulty, reset, and next-level affordances without embedding puzzle data in leaf components.
 - **Tests** — Vitest uses `src/test/setupVitest.ts` for a synchronous `requestAnimationFrame` shim so progression code runs in Node; coverage includes validation, hydration, loaders, persistence, and level-flow behavior.
 
+## Phase 5 procedural generation
+
+- **Seeds** — `stringToSeed` / `mixSeed` plus `createMulberry32` provide deterministic RNG streams suitable for daily seeds and shareable replays (`tooling/seedReplay.ts` envelope).
+- **Construction** — `tryBuildPartitionedPaths` sequentially carves four disjoint orthogonal BFS corridors (moss, rose, beige, midnight) so every emitted puzzle has a known satisfying layout (not naive random endpoints).
+- **Pipeline** — `generatePuzzle` loops deterministic attempt indices, applies tier-tuned `partitionParamsForTier`, analyzes the solution grid (`boardMetrics`), scores with `scoreGenerationCandidate`, classifies difficulty from metrics (`classifyDifficulty`), exports `PuzzleRecordV1` via `pathsToPuzzleRecord`, and validates with `validateGeneratedBundle`.
+- **Solver helpers** — `game/solver` exposes `bfsShortestPath`, `hasOrthogonalPath`, `validateDisjointPaths`, and a tiny `boundedBacktrack` for future hints / assist without coupling to React.
+- **Dev UX** — `useGenerationDevStore` + lazy-loaded `LevelGeneratorDevTools` / `CanvasGenerationOverlay` keep the generator out of the production hot path while enabling “Generate & play”. `playGeneratedPuzzle` on `useLevelFlowStore` loads ephemeral puzzles; `persist` keeps catalog `currentLevelId` when the active id is not in the builtin catalog; `onPuzzleSolved` ignores non-catalog ids.
+- **Debug overlay** — When the dev overlay is on, `renderDebugOverlay` shows last seed, timing, score, occupancy, turns, junction pressure, and generator errors from `useGenerationDevStore`.
+- **Worker-ready types** — `GenerationWorkerRequest` / `GenerationWorkerResponse` document a future off-main-thread bridge without implementing workers yet.
+
 ## Phase 2 interactive surface
 
 - **Grid** — `computeBoardLayout` fits an 8×8 board inside the canvas with equal padding, preserving a square aspect ratio at any viewport size (DPR still handled in `Canvas`).

@@ -1,1 +1,5 @@
-export { computePuzzleSolved, completionRatio } from '@/game/logic/completion/winState'
+export {
+  computePuzzleSolved,
+  completionRatio,
+  isGridFullyCovered,
+} from '@/game/logic/completion/winState'

@@ -1,2 +1,8 @@
-export { computeBoardLayout, isCellOnBoard, layoutsEqual, type BoardLayout } from './boardLayout'
-export { canvasPointToCell, cellToCanvasCenter, cellToCanvasRect } from './cellMapping'
+export {
+  BOARD_PLAY_INSET,
+  computeBoardLayout,
+  isCellOnBoard,
+  layoutsEqual,
+  type BoardLayout,
+} from './boardLayout'
+export { canvasPointToCell, canvasPointToCellClamped, cellToCanvasCenter, cellToCanvasRect } from './cellMapping'

@@ -1,16 +1,45 @@
+import { isPairPathComplete } from '@/game/logic/completion/pairCompletion'
 import type { CcColorKey } from '@/lib/palette'
-import { colorKeyToOccupancyIndex } from '@/lib/colorCodec'
+import { colorKeyToOccupancyIndex, occupancyIndexToColorKey } from '@/lib/colorCodec'
 import { cellToIndex, cellsEqual, manhattan } from '@/game/logic/pathing/cellMath'
 import { writeOccupancyMap, type PathsState } from '@/game/logic/pathing/occupation'
 import { isWithinGrid } from '@/game/logic/validation/bounds'
 import type { GridCell } from '@/types/grid'
 
-export type PathStepLint = 'noop' | 'backstep' | 'truncate' | 'extend' | 'blocked'
+/** Endpoint map from the puzzle (same shape as gameplay `pairByColor`). */
+export type PairEndpointsByColor = Readonly<
+  Partial<Record<CcColorKey, { a: GridCell; b: GridCell }>>
+>
+
+/** True if `cell` is a dot belonging to another color (Flow: paths may not cross other dots). */
+export function isForeignEndpointCell(
+  cell: GridCell,
+  color: CcColorKey,
+  pairByColor: PairEndpointsByColor,
+): boolean {
+  for (const key of Object.keys(pairByColor) as CcColorKey[]) {
+    if (key === color) continue
+    const p = pairByColor[key]
+    if (!p) continue
+    if (cellsEqual(cell, p.a) || cellsEqual(cell, p.b)) return true
+  }
+  return false
+}
+
+export type PathStepLint =
+  | 'noop'
+  | 'backstep'
+  | 'truncate'
+  | 'extend'
+  | 'sever_extend'
+  | 'blocked'
 
 export type PathHoverStepResult = {
   nextPath: GridCell[]
   changed: boolean
   lint: PathStepLint
+  /** Other colors whose paths were trimmed so `color` could extend into `hover`. */
+  coercedTruncations?: Partial<PathsState>
 }
 
 /**
@@ -23,6 +52,7 @@ export function applyHoverPathStep(
   hover: GridCell,
   lastApplied: GridCell | null,
   scratchOcc: Uint8Array,
+  pairByColor: PairEndpointsByColor,
 ): PathHoverStepResult {
   if (!isWithinGrid(hover)) {
     const cur = [...(paths[color] ?? [])]
@@ -60,12 +90,37 @@ export function applyHoverPathStep(
     return { nextPath: path, changed: false, lint: 'noop' }
   }
 
+  const pair = pairByColor[color]
+  if (pair && isPairPathComplete(path, pair.a, pair.b)) {
+    return { nextPath: path, changed: false, lint: 'blocked' }
+  }
+
   writeOccupancyMap(paths, scratchOcc)
   const hoverIdx = cellToIndex(hover)
   const owner = scratchOcc[hoverIdx]
   const selfIdx = colorKeyToOccupancyIndex(color)
 
   if (owner !== 0 && owner !== selfIdx) {
+    const otherColor = occupancyIndexToColorKey(owner)
+    if (!otherColor) {
+      return { nextPath: path, changed: false, lint: 'blocked' }
+    }
+    const otherPath = paths[otherColor] ?? []
+    const cutAt = otherPath.findIndex((c) => cellsEqual(c, hover))
+    if (cutAt < 0) {
+      return { nextPath: path, changed: false, lint: 'blocked' }
+    }
+    const severed = otherPath.slice(0, cutAt)
+    path.push(hover)
+    return {
+      nextPath: path,
+      changed: true,
+      lint: 'sever_extend',
+      coercedTruncations: { [otherColor]: severed },
+    }
+  }
+
+  if (owner === 0 && isForeignEndpointCell(hover, color, pairByColor)) {
     return { nextPath: path, changed: false, lint: 'blocked' }
   }
 

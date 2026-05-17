@@ -1,14 +1,22 @@
-import { canvasPointToCell, computeBoardLayout } from '@/engine/grid'
+import { computeBoardLayout } from '@/engine/grid'
+import { canvasPointToCellClamped } from '@/engine/grid/cellMapping'
 import { clientToCanvasLocal } from '@/engine/input/coordinateSystem'
+import { resolvePointerCell } from '@/engine/input/resolvePointerCell'
 import { mountPointerSession, PRIMARY_DRAG_THRESHOLD_PX } from '@/engine/input/pointerManager'
 import { useGameplayStore } from '@/game/stores/gameplayStore'
 import { useInteractionStore } from '@/game/stores/interactionStore'
 import type { BoardNode } from '@/types/grid'
 
 export type InteractionMountOptions = {
-  target: HTMLElement
+  /** Prefer the canvas element so client→canvas math matches the drawing surface. */
+  target: HTMLCanvasElement
   canvas: HTMLCanvasElement
   getNodes: () => readonly BoardNode[]
+}
+
+function layoutFromCanvas(canvas: HTMLCanvasElement) {
+  const rect = canvas.getBoundingClientRect()
+  return computeBoardLayout(rect.width, rect.height)
 }
 
 /**
@@ -17,24 +25,25 @@ export type InteractionMountOptions = {
 export function mountInteractionController(options: InteractionMountOptions): () => void {
   const { target, canvas, getNodes } = options
 
-  const layoutFromCanvas = () => {
-    const rect = canvas.getBoundingClientRect()
-    return computeBoardLayout(rect.width, rect.height)
-  }
-
   return mountPointerSession(target, {
-    onPointerDown: (event) => {
+    onPointerDown: (_event) => {
       const local = clientToCanvasLocal(canvas, event.clientX, event.clientY)
-      const layout = layoutFromCanvas()
-      const cell = canvasPointToCell(layout, local.x, local.y)
+      const layout = layoutFromCanvas(canvas)
+      const cell = resolvePointerCell(layout, local.x, local.y, getNodes(), {
+        paths: useGameplayStore.getState().paths,
+        pairByColor: useGameplayStore.getState().pairByColor,
+        dragging: false,
+      })
       useInteractionStore.getState().pointerDown({ pos: local, cell })
       useGameplayStore.getState().beginPointer(cell, getNodes())
     },
 
-    onPointerMove: (event) => {
+    onPointerMove: (_event) => {
       const local = clientToCanvasLocal(canvas, event.clientX, event.clientY)
-      const layout = layoutFromCanvas()
-      const cell = canvasPointToCell(layout, local.x, local.y)
+      const layout = layoutFromCanvas(canvas)
+      // Strict grid while painting: node magnet on move snaps back to the endpoint and blocks
+      // orthogonal extension into the next cell.
+      const cell = canvasPointToCellClamped(layout, local.x, local.y)
 
       useInteractionStore.getState().setPointerCanvasPos(local)
       useInteractionStore.getState().setHoverCell(cell)
@@ -56,10 +65,10 @@ export function mountInteractionController(options: InteractionMountOptions): ()
       }
     },
 
-    onPointerUp: (event) => {
+    onPointerUp: (_event) => {
       const local = clientToCanvasLocal(canvas, event.clientX, event.clientY)
-      const layout = layoutFromCanvas()
-      const endCell = canvasPointToCell(layout, local.x, local.y)
+      const layout = layoutFromCanvas(canvas)
+      const endCell = canvasPointToCellClamped(layout, local.x, local.y)
 
       const state = useInteractionStore.getState()
       const dragged = state.pointerPhase === 'dragging'

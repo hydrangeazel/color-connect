@@ -32,6 +32,8 @@ type LevelFlowStore = LevelFlowSnapshot & {
 
   bootstrapBuiltinCatalog: () => void
   loadPuzzleAtIndex: (index: number) => void
+  /** Ephemeral puzzle (e.g. procedural); does not replace catalog index. */
+  playGeneratedPuzzle: (entry: LoadedPuzzle) => void
   restartCurrentLevel: () => void
   advanceToNextPuzzle: () => void
   onPuzzleSolved: () => void
@@ -104,6 +106,24 @@ export const useLevelFlowStore = create<LevelFlowStore>((set, get) => ({
     })
   },
 
+  playGeneratedPuzzle: (entry) => {
+    set({ transition: 'switching' })
+    requestAnimationFrame(() => {
+      set({
+        activePuzzleId: entry.id,
+        activeRecord: entry.record,
+        boardNodes: entry.nodes,
+        transition: 'entering',
+        levelStartedAt: performance.now(),
+        boardRevision: get().boardRevision + 1,
+      })
+      requestAnimationFrame(() => {
+        set({ transition: 'playing' })
+        get().persist()
+      })
+    })
+  },
+
   restartCurrentLevel: () => {
     useGameplayStore.getState().resetRound()
     set((s) => ({
@@ -130,8 +150,10 @@ export const useLevelFlowStore = create<LevelFlowStore>((set, get) => ({
     if (!id) return
     if (get().solvedLevelIds.includes(id)) return
 
-    const solved = [...get().solvedLevelIds, id]
     const catalog = get().catalog
+    if (!catalog.some((p) => p.id === id)) return
+
+    const solved = [...get().solvedLevelIds, id]
     const idx = catalog.findIndex((p) => p.id === id)
     const nextId = catalog[idx + 1]?.id
     let unlocked = get().unlockedLevelIds
@@ -148,12 +170,17 @@ export const useLevelFlowStore = create<LevelFlowStore>((set, get) => ({
   },
 
   persist: () => {
-    const { unlockedLevelIds, solvedLevelIds, activePuzzleId } = get()
+    const { unlockedLevelIds, solvedLevelIds, activePuzzleId, catalog, activeIndex } = get()
+    const catalogIds = new Set(catalog.map((c) => c.id))
+    const currentLevelId =
+      activePuzzleId && catalogIds.has(activePuzzleId)
+        ? activePuzzleId
+        : (catalog[activeIndex]?.id ?? activePuzzleId)
     const payload: SaveFileV1 = {
       v: 1,
       unlockedLevelIds,
       solvedLevelIds,
-      currentLevelId: activePuzzleId,
+      currentLevelId,
       settings: {
         prefersReducedMotion: useSettingsStore.getState().prefersReducedMotion,
       },

@@ -6,6 +6,7 @@ import { applyHoverPathStep, type PathStepLint } from '@/game/logic/pathing/path
 import type { PathsState } from '@/game/logic/pathing/occupation'
 import {
   initialPathForPointerDown,
+  isEndpointForColor,
   pairsFromRecord,
   resolveColorUnderPointer,
 } from '@/game/logic/validation/pointerRouting'
@@ -92,6 +93,20 @@ export const useGameplayStore = create<GameplayStore>((set, get) => ({
       return
     }
 
+    const existing = paths[color] ?? []
+    if (existing.length > 0 && isEndpointForColor(cell, color, pairByColor)) {
+      const nextPaths = { ...paths, [color]: [] }
+      const win = winTransition(pairByColor, nextPaths, get().solved, get().solvedAtMs)
+      set({
+        paths: nextPaths,
+        sessionColor: null,
+        lastAppliedHover: null,
+        lastPathLint: 'idle',
+        ...win,
+      })
+      return
+    }
+
     const nextPath = initialPathForPointerDown(color, cell, paths, pairByColor)
     if (!nextPath) {
       set({ sessionColor: null, lastAppliedHover: null, lastPathLint: 'idle' })
@@ -115,7 +130,14 @@ export const useGameplayStore = create<GameplayStore>((set, get) => ({
       get()
     if (!sessionColor) return
 
-    const result = applyHoverPathStep(paths, sessionColor, cell, lastAppliedHover, scratchOcc)
+    const result = applyHoverPathStep(
+      paths,
+      sessionColor,
+      cell,
+      lastAppliedHover,
+      scratchOcc,
+      pairByColor,
+    )
 
     if (!result.changed) {
       set({
@@ -125,7 +147,11 @@ export const useGameplayStore = create<GameplayStore>((set, get) => ({
       return
     }
 
-    const nextPaths = { ...paths, [sessionColor]: result.nextPath }
+    const nextPaths = {
+      ...paths,
+      ...(result.coercedTruncations ?? {}),
+      [sessionColor]: result.nextPath,
+    }
     const win = winTransition(pairByColor, nextPaths, solved, solvedAtMs)
     set({
       paths: nextPaths,

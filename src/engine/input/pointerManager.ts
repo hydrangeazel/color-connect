@@ -1,4 +1,5 @@
-export const PRIMARY_DRAG_THRESHOLD_PX = 6
+/** Slightly forgiving for touch / dense grids; still snappy on mouse. */
+export const PRIMARY_DRAG_THRESHOLD_PX = 11
 
 export type PointerSessionHandlers = {
   onPointerDown: (event: PointerEvent) => void

@@ -1,6 +1,6 @@
 # Color Connect
 
-Browser-native puzzle experience inspired by Flow Free — calm, moss-lit, and canvas-driven. The repo ships **through Phase 4**: canvas interaction, Flow-style pathing and win detection, plus a **JSON puzzle catalog**, **progression**, and **versioned localStorage saves** (see `docs/architecture.md`).
+Browser-native puzzle experience inspired by Flow Free — calm, moss-lit, and canvas-driven. The repo ships **through Phase 5**: foundation through catalog/progression/saves **plus** a **deterministic procedural generator** (seeded RNG, quality scoring, solver helpers, and dev-only generate/play tooling). See `docs/architecture.md`.
 
 ## Highlights
 
@@ -83,10 +83,11 @@ VITE_APP_NAME=Color Connect
 
 ## Roadmap
 
-### Shipped (Phases 1–4)
+### Shipped (Phases 1–5)
 
 - Canvas RAF pipeline, grid layout, pointer routing, path mutation, completion, and dev overlay
 - `PuzzleRecordV1` content format, builtin registry, validation, loaders, `useLevelFlowStore`, and `SaveFileV1` persistence
+- Deterministic procedural generator (`game/generation`) with seeded RNG, quality gates, solver helpers, and dev-only generate/play tooling
 
 ### Next
 

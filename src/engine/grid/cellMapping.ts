@@ -20,6 +20,20 @@ export function canvasPointToCell(
   return { col, row }
 }
 
+/** Maps to the cell under the pointer; clamps to the board so edge pixels still resolve. */
+export function canvasPointToCellClamped(
+  layout: BoardLayout,
+  canvasLocalX: number,
+  canvasLocalY: number,
+): GridCell | null {
+  const ox = layout.originX
+  const oy = layout.originY
+  const s = layout.boardSizePx
+  const cx = Math.min(Math.max(canvasLocalX, ox + 1e-3), ox + s - 1e-3)
+  const cy = Math.min(Math.max(canvasLocalY, oy + 1e-3), oy + s - 1e-3)
+  return canvasPointToCell(layout, cx, cy)
+}
+
 export function cellToCanvasCenter(layout: BoardLayout, cell: GridCell): { x: number; y: number } {
   return {
     x: layout.originX + (cell.col + 0.5) * layout.cellSize,

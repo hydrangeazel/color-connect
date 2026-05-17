@@ -20,32 +20,42 @@ export function renderBoard(
   ctx.save()
   ctx.translate(layout.originX, layout.originY)
 
-  // Soft panel behind grid
-  ctx.fillStyle = 'rgba(10, 51, 35, 0.35)'
-  ctx.strokeStyle = 'rgba(247, 244, 213, 0.08)'
-  ctx.lineWidth = 1
-  const r = Math.min(18, layout.cellSize * 0.35)
+  const r = Math.min(20, layout.cellSize * 0.4)
+
+  // Ambient rim — draws the eye to the playfield
+  ctx.shadowColor = 'rgba(131, 153, 88, 0.45)'
+  ctx.shadowBlur = layout.cellSize * 0.85
+  ctx.fillStyle = 'rgba(10, 51, 35, 0.82)'
+  ctx.strokeStyle = 'rgba(247, 244, 213, 0.22)'
+  ctx.lineWidth = 1.5
   roundRect(ctx, 0, 0, layout.boardSizePx, layout.boardSizePx, r)
   ctx.fill()
   ctx.stroke()
+  ctx.shadowBlur = 0
 
-  // Hover cell
+  // Inner working surface
+  ctx.fillStyle = 'rgba(7, 31, 22, 0.55)'
+  ctx.strokeStyle = 'rgba(16, 86, 102, 0.35)'
+  ctx.lineWidth = 1
+  roundRect(ctx, 2, 2, layout.boardSizePx - 4, layout.boardSizePx - 4, Math.max(4, r - 4))
+  ctx.fill()
+  ctx.stroke()
+
   if (hoverCell) {
     const rect = cellToCanvasRect(layout, hoverCell)
     const localX = rect.x - layout.originX
     const localY = rect.y - layout.originY
-    const breath = 0.55 + Math.sin(now * 0.006) * 0.08
+    const breath = 0.62 + Math.sin(now * 0.007) * 0.1
 
-    ctx.fillStyle = `rgba(131, 153, 88, ${0.12 * breath})`
-    ctx.strokeStyle = `rgba(247, 244, 213, ${0.12 * breath})`
-    ctx.lineWidth = 1
-    roundRect(ctx, localX + 1, localY + 1, rect.w - 2, rect.h - 2, Math.min(10, rect.w * 0.2))
+    ctx.fillStyle = `rgba(131, 153, 88, ${0.2 * breath})`
+    ctx.strokeStyle = `rgba(247, 244, 213, ${0.28 * breath})`
+    ctx.lineWidth = 1.5
+    roundRect(ctx, localX + 1, localY + 1, rect.w - 2, rect.h - 2, Math.min(12, rect.w * 0.22))
     ctx.fill()
     ctx.stroke()
   }
 
-  // Grid lines
-  ctx.strokeStyle = 'rgba(247, 244, 213, 0.08)'
+  ctx.strokeStyle = 'rgba(247, 244, 213, 0.14)'
   ctx.lineWidth = 1
   ctx.beginPath()
   for (let i = 0; i <= layout.gridSize; i += 1) {
@@ -58,11 +68,14 @@ export function renderBoard(
   ctx.stroke()
 
   if (solved) {
-    const pulse = solvedAtMs != null ? 0.45 + Math.sin((now - solvedAtMs) * 0.003) * 0.2 : 0.55
-    ctx.strokeStyle = `rgba(211, 150, 140, ${0.35 + pulse * 0.2})`
-    ctx.lineWidth = 2.2
-    roundRect(ctx, -2, -2, layout.boardSizePx + 4, layout.boardSizePx + 4, r + 2)
+    const pulse = solvedAtMs != null ? 0.45 + Math.sin((now - solvedAtMs) * 0.003) * 0.22 : 0.58
+    ctx.shadowColor = `rgba(211, 150, 140, ${0.35 + pulse * 0.25})`
+    ctx.shadowBlur = layout.cellSize * 0.5
+    ctx.strokeStyle = `rgba(247, 244, 213, ${0.45 + pulse * 0.2})`
+    ctx.lineWidth = 2.8
+    roundRect(ctx, -3, -3, layout.boardSizePx + 6, layout.boardSizePx + 6, r + 3)
     ctx.stroke()
+    ctx.shadowBlur = 0
   }
 
   ctx.restore()
@@ -76,12 +89,12 @@ function roundRect(
   h: number,
   radius: number,
 ) {
-  const r = Math.min(radius, w / 2, h / 2)
+  const rad = Math.min(radius, w / 2, h / 2)
   ctx.beginPath()
-  ctx.moveTo(x + r, y)
-  ctx.arcTo(x + w, y, x + w, y + h, r)
-  ctx.arcTo(x + w, y + h, x, y + h, r)
-  ctx.arcTo(x, y + h, x, y, r)
-  ctx.arcTo(x, y, x + w, y, r)
+  ctx.moveTo(x + rad, y)
+  ctx.arcTo(x + w, y, x + w, y + h, rad)
+  ctx.arcTo(x + w, y + h, x, y + h, rad)
+  ctx.arcTo(x, y + h, x, y, rad)
+  ctx.arcTo(x, y, x + w, y, rad)
   ctx.closePath()
 }

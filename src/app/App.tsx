@@ -1,9 +1,9 @@
 import { useLayoutEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
 import { GameBootstrap } from '@/app/GameBootstrap'
 import { AppProviders } from '@/app/AppProviders'
 import { GameCanvas } from '@/components/game/GameCanvas'
 import { LevelHud } from '@/components/game/LevelHud'
+import { PlayHints } from '@/components/game/PlayHints'
 import { env } from '@/lib/env'
 import { useLevelFlowStore } from '@/game/levels/progression/levelFlowStore'
 import { useGameStore } from '@/game/stores'
@@ -20,59 +20,60 @@ function ShellChrome() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 py-8">
-        <div>
-          <p className="text-xs uppercase tracking-[0.35em] text-cc-moss/80">
-            Phase 4 · Levels and flow
+      <header className="mx-auto w-full max-w-6xl px-4 pb-2 pt-8 sm:px-6 sm:pb-4 sm:pt-10">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.32em] text-cc-moss/90">Puzzle</p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-cc-beige sm:text-4xl">
+              {env.appName}
+            </h1>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-cc-beige/80">
+              Calm paths through the moss grid — connect every pair without crossing lines.
+            </p>
+          </div>
+          <p className="hidden text-right text-[11px] text-cc-beige/45 sm:block">
+            <span className="text-cc-moss/90">State</span> · {phase}
           </p>
-          <h1 className="mt-2 text-3xl font-semibold text-cc-beige sm:text-4xl">{env.appName}</h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-cc-beige/70">
-            JSON puzzles, a versioned save slot, and a progression shell that keeps hot gameplay in
-            the canvas loop while content rides through a small, testable pipeline.
-          </p>
-        </div>
-        <div className="hidden text-right text-xs text-cc-beige/60 sm:block">
-          <p className="font-medium text-cc-moss">Engine</p>
-          <p className="mt-1">Lifecycle: {phase}</p>
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 pb-12">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 px-4 pb-10 sm:gap-5 sm:px-6 sm:pb-12">
+        <PlayHints />
         <LevelHud />
 
-        <section className="grid flex-1 gap-6 lg:grid-cols-[1.1fr_0.45fr]">
-          <GameCanvas className="min-h-[420px] lg:min-h-[520px]" />
+        <section className="grid min-h-0 flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_min(240px,28vw)] lg:items-start lg:gap-8">
+          <div className="order-1 flex min-h-[min(72vh,640px)] flex-col lg:order-none">
+            <div className="relative flex flex-1 items-stretch justify-center rounded-2xl border border-cc-moss/30 bg-gradient-to-b from-cc-midnight/25 via-black/20 to-cc-forest/40 p-2 shadow-[0_20px_60px_rgba(0,0,0,0.35)] sm:p-3 md:p-4">
+              <div className="flex w-full max-w-[min(100%,720px)] flex-1 flex-col self-center">
+                <GameCanvas className="min-h-[min(68vh,600px)] flex-1" />
+              </div>
+            </div>
+          </div>
 
-          <aside className="flex flex-col gap-4 rounded-[var(--radius-panel)] border border-white/5 bg-surface-1/70 p-6 shadow-soft backdrop-blur">
+          <aside className="order-2 flex flex-col gap-3 rounded-2xl border border-white/10 bg-cc-midnight/25 p-4 text-sm text-cc-beige/75 shadow-soft backdrop-blur lg:sticky lg:top-6 lg:self-start">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-cc-moss/80">Content</p>
-              <h2 className="mt-2 text-xl font-semibold text-cc-beige">Catalog and saves</h2>
-              <p className="mt-2 text-sm leading-relaxed text-cc-beige/70">
-                Built-in puzzles live under{' '}
-                <code className="text-cc-moss/90">game/levels/puzzles</code>. Progress persists to{' '}
-                <code className="text-cc-moss/90">localStorage</code> with a versioned schema so
-                migrations stay explicit.
+              <p className="text-[10px] uppercase tracking-[0.28em] text-cc-moss/85">About</p>
+              <h2 className="mt-1.5 text-base font-semibold text-cc-beige">
+                Hand-crafted and generated
+              </h2>
+              <p className="mt-2 leading-relaxed text-cc-beige/70">
+                Levels ship as data. Your progress saves locally. Optional procedural seeds reuse
+                the same validation path as authored puzzles.
               </p>
             </div>
-
-            <motion.div
-              className="mt-auto rounded-2xl border border-cc-moss/25 bg-cc-midnight/35 p-4 text-sm text-cc-beige/80"
-              initial={{ opacity: 0.6 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.15, duration: 0.6 }}
-            >
-              <p className="font-medium text-cc-rose">Next infrastructure</p>
-              <p className="mt-2 leading-relaxed">
-                Remote catalogs, procedural seeds, replays, and cloud sync can plug into the same
-                loader + validation boundary.
-              </p>
-            </motion.div>
+            <div className="rounded-xl border border-white/5 bg-black/20 p-3 text-xs leading-relaxed text-cc-beige/60">
+              Tip: drag from a colored dot. Tracing over another color blocks the path — lift and
+              try another route.
+            </div>
           </aside>
         </section>
       </main>
 
-      <footer className="border-t border-white/5 bg-black/20 py-6 text-center text-xs text-cc-beige/50">
-        Crafted for calm sessions · {new Date().getFullYear()} · {env.appName}
+      <footer className="border-t border-white/5 bg-black/25 py-5 text-center text-[11px] text-cc-beige/50">
+        {new Date().getFullYear()} · {env.appName}
+        {import.meta.env.DEV ? (
+          <span className="ml-2 text-cc-beige/35">· ` debug · Shift+` details + hit rings</span>
+        ) : null}
       </footer>
     </div>
   )

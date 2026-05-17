@@ -13,12 +13,13 @@ type ComputeOptions = {
   inset: number
 }
 
-const DEFAULT_INSET = 40
+/** Tighter inset = larger on-screen board; keep in sync with pointer hit-testing. */
+export const BOARD_PLAY_INSET = 14
 
 export function computeBoardLayout(
   canvasCssWidth: number,
   canvasCssHeight: number,
-  options: ComputeOptions = { inset: DEFAULT_INSET },
+  options: ComputeOptions = { inset: BOARD_PLAY_INSET },
 ): BoardLayout {
   const inset = options.inset
   const innerW = Math.max(1, canvasCssWidth - inset * 2)
